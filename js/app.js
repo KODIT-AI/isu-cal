@@ -51,6 +51,7 @@
   var modeManual    = $('modeManual');
   var deliveryError = $('deliveryError');
   var periodError   = $('periodError');
+  var periodGuide   = $('periodGuide');
   var panel         = $('panel');
   var captureBtn    = $('captureBtn');
   var captureNote   = $('captureNote');
@@ -104,9 +105,13 @@
   }
 
   /* ── 입력 동작 ──────────────────────────────────────────── */
-  function applyMode() {
+function applyMode() {
     var manual = modeManual.checked;
     periodDays.readOnly = !manual;
+
+    // '모름'일 때만 안내 문구 표시
+    periodGuide.classList.toggle('is-hidden', manual);
+
     if (manual) {
       periodDays.value = '';
       periodDays.focus();
@@ -232,6 +237,7 @@
     modeUnknown.checked = true;
     periodDays.value = String(DEFAULT_DAYS);
     periodDays.readOnly = true;
+    periodGuide.classList.remove('is-hidden');
     deliveryError.textContent = '';
     periodError.textContent = '';
     captureNote.classList.remove('is-open');

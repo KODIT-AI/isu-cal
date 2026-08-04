@@ -60,7 +60,7 @@
 
 ```js
 var DEFAULT_DAYS = 31;   // '모름' 선택 시 기본 일수
-var MIN_DAYS     = 30;   // 최소 입력값
+var MIN_DAYS     = 1;    // 최소 입력값
 var MAX_DAYS     = 180;  // 최대 입력값
 var GRACE_MONTHS = 2;    // 결제기일 이후 연장 결제 기간(개월)
 ```

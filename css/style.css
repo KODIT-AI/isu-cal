@@ -81,12 +81,28 @@ body{
   color:var(--ink);margin:0 0 12px;
   transition:color .15s ease;
 }
+/*
 .field-label::after{
   content:"";display:block;width:18px;height:2px;margin-top:7px;
   background:var(--line-2);border-radius:1px;transition:background .15s ease;
 }
 .field:focus-within .field-label{color:var(--brand)}
 .field:focus-within .field-label::after{background:var(--brand)}
+*/
+
+/*
+라벨 글자 너비만큼 — display:block → inline-block으로 바꾸면 밑줄이 글자 길이를 따라갑니다. 
+다만 ::after는 부모 폭을 기준으로 하므로, 라벨 자체를 inline-block으로 만들고 밑줄을 width:100%로 두는 방식이 확실합니다.
+*/
+.field-label::after{
+  content:"";display:block;width:100%;height:2px;margin-top:7px;
+  background:var(--line-2);border-radius:1px;transition:background .15s ease;
+}
+.field:focus-within .field-label{color:var(--brand)}
+.field:focus-within .field-label::after{background:var(--brand)}
+
+
+
 
 input[type="date"],
 input[type="text"]{
@@ -141,6 +157,15 @@ input[readonly]{color:var(--muted);border-bottom-style:dashed;cursor:default}
   background:var(--field);border:1px solid var(--line);border-radius:var(--r-md);
   color:var(--ink-2);line-height:1.5;
 }
+
+/* 안내 박스가 40px 정도라 빈 공간이 남습니다. 
+좌우 2열 배치에서 높이를 맞추려면 이쪽이 낫고, 여백이 아깝다면 display:none이 낫습니다. */
+
+/* .msg-guide.is-hidden{display:none} */
+.msg-guide{transition:opacity .16s ease}
+.msg-guide.is-hidden{opacity:0;visibility:hidden}
+
+
 .msg-icon{
   flex:0 0 auto;width:15px;height:15px;margin-top:2px;border-radius:50%;
   background:var(--ink-2);color:#fff;
