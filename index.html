@@ -3,467 +3,132 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="물품인도일과 보험증권상 결제기간으로 결제기일과 이행지체 기준일을 계산하는 간이 계산기">
+<meta name="color-scheme" content="light">
 <title>이행지체 기준일 간이 계산기</title>
-<style>
-:root{
-  --ink:#16233B;
-  --ink-soft:#516079;
-  --paper:#FFFFFF;
-  --field:#F1F4F9;
-  --rule:#DCE3ED;
-  --seal:#B01B2E;
-  --seal-soft:#FCEFF1;
-  --focus:#2C5FA8;
-  --caution-bg:#FCF6E4;
-  --caution-ink:#7A5C10;
-  --radius:10px;
-  --serif:"Nanum Myeongjo","NanumMyeongjo","Gowun Batang","Batang","바탕",serif;
-  --sans:"Pretendard","Pretendard Variable","Malgun Gothic","맑은 고딕","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;
-}
-*{box-sizing:border-box}
-html,body{margin:0;padding:0}
-body{
-  font-family:var(--sans);
-  color:var(--ink);
-  background-color:#EBEFF5;
-  background-image:linear-gradient(var(--rule) 1px,transparent 1px);
-  background-size:100% 28px;
-  line-height:1.55;
-  -webkit-text-size-adjust:100%;
-  padding:24px 16px 56px;
-}
-.sheet{
-  max-width:880px;margin:0 auto;background:var(--paper);
-  border:1px solid var(--rule);border-radius:var(--radius);
-  box-shadow:0 1px 0 rgba(22,35,59,.04),0 18px 40px -28px rgba(22,35,59,.45);
-  overflow:hidden;
-}
-
-/* ── 머리말 ── */
-.masthead{padding:28px 28px 22px;border-bottom:2px solid var(--ink)}
-.eyebrow{font-size:12px;letter-spacing:.22em;color:var(--ink-soft);margin:0 0 8px;font-weight:600}
-.masthead h1{font-family:var(--serif);font-size:clamp(22px,4.6vw,32px);font-weight:700;margin:0;letter-spacing:-.01em}
-.masthead p{margin:10px 0 0;font-size:14px;color:var(--ink-soft)}
-
-/* ── 입력 ── */
-.form{padding:26px 28px 8px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:22px}
-.field-label{display:block;font-size:14px;font-weight:700;margin:0 0 8px}
-.hint{font-weight:400;color:var(--ink-soft);font-size:12.5px;margin-left:6px}
-
-input[type="date"],input[type="text"]{
-  width:100%;font-family:var(--sans);font-size:16px;color:var(--ink);
-  background:var(--field);border:1px solid var(--rule);border-radius:8px;
-  padding:12px 13px;font-variant-numeric:tabular-nums;
-}
-input[type="date"]{min-height:48px}
-input:focus-visible,button:focus-visible,.radio input:focus-visible + .radio-face{
-  outline:2px solid var(--focus);outline-offset:2px;
-}
-input[readonly]{background:#E9EDF3;color:var(--ink-soft)}
-.days-row{display:flex;align-items:center;gap:10px}
-.days-row input{max-width:110px;text-align:center;letter-spacing:.04em}
-.days-unit{font-size:15px;color:var(--ink-soft)}
-
-.choices{display:flex;gap:8px;margin:0 0 10px}
-.radio{position:relative}
-.radio input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}
-.radio-face{
-  display:block;padding:7px 16px;border:1px solid var(--rule);border-radius:999px;
-  font-size:13.5px;color:var(--ink-soft);background:var(--paper);cursor:pointer;
-  transition:background .12s ease,color .12s ease,border-color .12s ease;
-}
-.radio input:checked + .radio-face{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:600}
-.error{min-height:18px;margin:7px 0 0;font-size:12.5px;color:var(--seal);font-weight:600}
-
-/* ── 버튼 ── */
-.actions{display:flex;gap:10px;padding:20px 28px 26px}
-button{
-  font-family:var(--sans);font-size:15px;font-weight:700;cursor:pointer;
-  border-radius:8px;padding:13px 20px;border:1px solid var(--ink);
-  transition:transform .08s ease,border-color .12s ease,color .12s ease;
-}
-button:active{transform:translateY(1px)}
-.btn-primary{background:var(--ink);color:#fff;flex:1 1 auto}
-.btn-ghost{background:var(--paper);color:var(--ink);border-color:var(--rule);flex:0 0 auto}
-.btn-ghost:hover{border-color:var(--ink)}
-
-/* ── 결과 ── */
-.result{border-top:1px solid var(--rule);background:#FAFBFD;padding:26px 28px 28px;display:none}
-.result.is-open{display:block}
-.result-title{font-size:12px;letter-spacing:.2em;color:var(--ink-soft);font-weight:700;margin:0 0 22px}
-
-/* 기간 축 */
-.axis{margin:0 0 4px}
-.axis-track{
-  display:flex;height:34px;border-radius:6px;overflow:hidden;
-  border:1px solid var(--rule);background:var(--field);
-}
-.seg{
-  display:flex;align-items:center;justify-content:center;overflow:hidden;
-  font-size:12.5px;font-weight:700;color:#fff;white-space:nowrap;
-}
-.seg-a{background:var(--ink);width:60%}
-.seg-b{background:var(--seal);width:40%;box-shadow:inset 2px 0 0 #fff}
-
-.marks{position:relative;margin-top:0}
-.mark{padding-top:14px}
-.mark::before{
-  content:"";position:absolute;top:0;width:0;height:0;
-  border-left:6px solid transparent;border-right:6px solid transparent;
-  border-top:7px solid var(--ink-soft);
-}
-.mark-start{position:absolute;left:0;top:0;text-align:left}
-.mark-start::before{left:10px}
-.mark-mid{position:relative;width:max-content;max-width:46%;text-align:center;margin:0 auto}
-.mark-mid::before{left:50%;transform:translateX(-50%)}
-.mark-end{position:absolute;right:0;top:0;text-align:right}
-.mark-end::before{right:10px;border-top-color:var(--seal)}
-
-.mark-label{font-size:12.5px;color:var(--ink-soft);margin:0 0 5px;white-space:nowrap}
-.mark-date{
-  font-family:var(--serif);font-size:clamp(15px,2.3vw,20px);font-weight:700;
-  white-space:nowrap;font-variant-numeric:tabular-nums;
-}
-.mark-dplus{
-  display:inline-block;margin-top:6px;font-size:11.5px;font-weight:700;
-  color:var(--ink-soft);background:var(--field);border:1px solid var(--rule);
-  border-radius:999px;padding:2px 9px;font-variant-numeric:tabular-nums;
-}
-.mark-end .mark-label{color:var(--seal);font-weight:700}
-.mark-end .mark-date{color:var(--seal)}
-.mark-end .mark-dplus{color:var(--seal);background:var(--seal-soft);border-color:#EBC3C9}
-
-/* 기준일 강조 배너 */
-.verdict{
-  margin-top:26px;display:flex;gap:14px;align-items:flex-start;
-  background:var(--seal-soft);border:1px solid #EBC3C9;border-left:4px solid var(--seal);
-  border-radius:8px;padding:16px 18px;
-}
-.verdict-mark{
-  flex:0 0 auto;font-family:var(--serif);font-size:13px;font-weight:700;color:var(--seal);
-  border:2px double var(--seal);border-radius:6px;padding:8px 10px;line-height:1.25;
-  text-align:center;transform:rotate(-2deg);white-space:nowrap;
-}
-.verdict-body{font-size:13.5px;color:#7B1626;margin:0}
-.verdict-body b{font-size:15px}
-
-.result-actions{display:flex;gap:10px;margin-top:22px}
-.result-actions button{
-  flex:1 1 0;background:var(--paper);color:var(--ink);border-color:var(--rule);
-  font-size:14px;padding:11px 14px;
-}
-.result-actions button:hover{border-color:var(--ink)}
-
-/* ── 유의사항 ── */
-.notes{background:var(--caution-bg);border-top:1px solid #EBDFB8;padding:20px 28px;font-size:13.5px;color:var(--caution-ink)}
-.notes h2{font-size:13px;margin:0 0 10px;letter-spacing:.06em}
-.notes ul{margin:0;padding-left:18px}
-.notes li + li{margin-top:7px}
-.notes b{color:#5F470A}
-
-/* ── 모바일 ── */
-@media (max-width:640px){
-  body{padding:0 0 40px;background-size:100% 26px}
-  .sheet{border-radius:0;border-left:0;border-right:0}
-  .masthead,.form,.actions,.result,.notes{padding-left:18px;padding-right:18px}
-  .grid{grid-template-columns:1fr;gap:20px}
-  .actions{flex-direction:column-reverse}
-  .btn-ghost{width:100%}
-
-  .seg{font-size:11.5px}
-  .marks{display:flex;flex-direction:column;gap:2px;margin-top:6px}
-  .mark{position:static;text-align:left;width:auto;max-width:none;margin:0;
-        padding:12px 0;border-bottom:1px dashed var(--rule)}
-  .mark::before{display:none}
-  .mark-end{border-bottom:0}
-  .mark-mid{text-align:left}
-  .mark-dplus{margin-top:0;margin-left:8px;vertical-align:2px}
-  .verdict{flex-direction:column;align-items:flex-start}
-  .verdict-mark{transform:none}
-  .result-actions{flex-direction:column}
-}
-@media (prefers-reduced-motion:reduce){
-  *{transition:none !important;animation:none !important}
-  .verdict-mark{transform:none}
-}
-
-/* ── 인쇄 ── */
-@media print{
-  body{background:#fff;padding:0}
-  .sheet{max-width:none;border:0;border-radius:0;box-shadow:none}
-  .form,.actions,.result-actions{display:none !important}
-  .result{border-top:0;background:#fff;padding-top:8px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  .seg,.verdict,.notes{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  .masthead{border-bottom-width:1px}
-}
-</style>
+<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<main class="sheet">
+<main class="wrap">
 
   <header class="masthead">
     <h1>이행지체 기준일 간이 계산기</h1>
-    <p>물품인도일과 보험증권상 결제기간을 넣으면 결제기일과 이행지체 기준일을 계산합니다.</p>
+    <p>물품인도일과 보험증권상 결제기간을 입력하면 결제기일과 이행지체 기준일을 계산합니다.</p>
   </header>
 
-  <section class="form">
+  <section class="card" aria-label="입력">
     <div class="grid">
-      <div>
+
+      <div class="field">
         <label class="field-label" for="deliveryDate">물품인도일</label>
         <input type="date" id="deliveryDate" aria-describedby="deliveryError">
-        <p class="error" id="deliveryError" role="alert"></p>
+        <p class="msg msg-error" id="deliveryError" role="alert"></p>
       </div>
 
-      <div>
-        <span class="field-label" id="periodLabel">보험증권에 표시된 결제기간<span class="hint">1~180일</span></span>
-        <div class="choices" role="radiogroup" aria-labelledby="periodLabel">
-          <label class="radio">
+      <div class="field">
+        <span class="field-label" id="periodLabel">보험증권에 표시된 결제기간 <span class="days-range">(30 ~ 180 일)</span> </span>
+        <div class="segmented" role="radiogroup" aria-labelledby="periodLabel">
+          <span class="seg">
             <input type="radio" name="periodMode" value="unknown" id="modeUnknown" checked>
-            <span class="radio-face">모름</span>
-          </label>
-          <label class="radio">
+            <label class="seg-face" for="modeUnknown">모름</label>
+          </span>
+          <span class="seg">
             <input type="radio" name="periodMode" value="manual" id="modeManual">
-            <span class="radio-face">일수 입력</span>
-          </label>
+            <label class="seg-face" for="modeManual">일수 입력</label>
+          </span>
         </div>
         <div class="days-row">
-          <input type="text" id="periodDays" inputmode="numeric" maxlength="3" value="30" readonly aria-describedby="periodError">
+          <input type="text" id="periodDays" inputmode="numeric" maxlength="3" value="31" readonly
+                 aria-describedby="periodError periodGuide">
           <span class="days-unit">일</span>
+          
         </div>
-        <p class="error" id="periodError" role="alert"></p>
+        <p class="msg msg-error" id="periodError" role="alert"></p>
+        <p class="msg msg-guide" id="periodGuide">
+          <span class="msg-icon" aria-hidden="true">i</span>
+          <span>&ldquo;결제기간&rdquo;을 &ldquo;모름&rdquo; 선택 시 물품인도 후 다음 달 월말결제(31일)로 계산됩니다.</span>
+        </p>
       </div>
+
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn btn-solid" id="calcBtn">계산하기</button>
+      <button type="button" class="btn btn-quiet" id="resetBtn">초기화</button>
     </div>
   </section>
 
-  <div class="actions">
-    <button type="button" class="btn-ghost" id="resetBtn">초기화</button>
-    <button type="button" class="btn-primary" id="calcBtn">계산하기</button>
-  </div>
+  <section class="panel" id="panel" aria-live="polite">
+    <div class="panel-head">
+      <p class="panel-eyebrow">계산 결과</p>
+      <p class="panel-basis" id="panelBasis">결제기간 31일</p>
+    </div>
 
-  <section class="result" id="result" aria-live="polite">
-    <p class="result-title">계산 결과</p>
-
-    <div class="axis">
-      <div class="axis-track">
-        <div class="seg seg-a" id="segA"><span id="segAText">결제기간 30일</span></div>
-        <div class="seg seg-b" id="segB"><span>연장 결제 기간 2개월</span></div>
+    <div class="timeline">
+      <div class="tl-track">
+        <div class="tl-seg tl-seg-a" id="segA"><span id="segAText">결제기간 31일</span></div>
+        <div class="tl-seg tl-seg-b" id="segB"><span>연장 결제 기간 2개월</span></div>
       </div>
-      <div class="marks">
-        <div class="mark mark-start">
-          <p class="mark-label">물품인도일</p>
-          <div class="mark-date" id="outDelivery">—</div>
-          <span class="mark-dplus">기산일</span>
+
+      <div class="tl-marks">
+        <div class="tl-mark tl-start">
+          <p class="tl-label">물품인도일</p>
+          <p class="tl-date" id="outDelivery">—</p>
+          <span class="tl-pill" id="pillStart">기산일</span>
         </div>
-        <div class="mark mark-mid" id="markMid">
-          <p class="mark-label">결제기일</p>
-          <div class="mark-date" id="outDue">—</div>
-          <span class="mark-dplus" id="dueDplus">D+0</span>
+
+        <div class="tl-mark tl-mid" id="markMid">
+          <span class="tl-body" id="midBody">
+            <p class="tl-label">결제기일</p>
+            <p class="tl-date" id="outDue">—</p>
+            <span class="tl-pill" id="pillDue">—</span>
+          </span>
         </div>
-        <div class="mark mark-end">
-          <p class="mark-label">이행지체 기준일</p>
-          <div class="mark-date" id="outBaseline">—</div>
-          <span class="mark-dplus" id="baseDplus">D+0</span>
+
+        <div class="tl-mark tl-end">
+          <p class="tl-label">이행지체 기준일</p>
+          <p class="tl-date" id="outBaseline">—</p>
+          <span class="tl-pill" id="pillBase">—</span>
         </div>
       </div>
+
+      <p class="tl-foot">결제기간은 물품인도일 다음 달 1일부터 계산하며, 이행지체 기준일은 결제기일의 2개월 뒤 같은 날짜입니다.</p>
     </div>
 
-    <div class="verdict">
-      <div class="verdict-mark">이행지체<br>기준일</div>
-      <p class="verdict-body">
-        <b id="verdictDate">—</b> 이후 발생하는 매출채권은,
-        미수채권이 남아 있는 경우 보험금이 지급되지 않습니다.
-      </p>
-    </div>
+    <aside class="aside">
+      <span class="aside-stamp">이행지체<br>기준일</span>
+      <div class="aside-body">
+        <p><b id="verdictDate">—</b> <b>다음 날부터</b> 발생하는 매출채권(인도 물품)은 보험대상이 아닙니다.</p>
+        <p class="aside-note" id="clampNote"></p>
+      </div>
+    </aside>
 
-    <div class="result-actions">
-      <button type="button" id="printBtn">인쇄하기</button>
-      <button type="button" id="imageBtn">이미지로 저장</button>
+    <div class="panel-actions">
+      <button type="button" class="btn btn-outline only-pc" id="printBtn">인쇄하기</button>
+      <button type="button" class="btn btn-outline only-mobile" id="captureBtn">캡쳐하기</button>
     </div>
+    <p class="capture-note" id="captureNote"></p>
   </section>
 
   <section class="notes">
-    <h2>유의사항</h2>
-    <ul>
-      <li><b>미수채권이 남아 있는 경우</b>, 이행지체 기준일 이후 발생하는 매출채권은 보험금을 지급하지 않습니다.</li>
-      <li>현금결제가 아닌 경우(예: 어음, 전자매출채권 등)에는 이행지체 기준일이 달라지므로, 영업점 담당자에게 별도로 문의하셔야 합니다.</li>
-      <li>이 계산기는 참고용 간이 도구입니다. 실제 기준일은 보험증권 및 약관이 우선합니다.</li>
-    </ul>
+    <details class="notes-box" id="notesBox">
+      <summary class="notes-summary">
+        <span class="notes-title">유의사항</span>
+        <span class="notes-count">4</span>
+        <span class="notes-chevron" aria-hidden="true"></span>
+      </summary>
+      <div class="notes-body">
+        <ul>
+          <li>이행지체 기준일 <b>다음 날부터</b> 발생하는 매출채권(인도 물품)은 보험대상이 아닙니다.</li>
+          <li>현금결제가 아닌 경우(예: 어음, 전자매출채권 등)에는 이행지체 기준일이 달라지므로, 영업점 담당자에게 별도로 문의하셔야 합니다.</li>
+          <li>이 계산기는 참고용 간이 도구입니다. 실제 기준일은 보험증권 및 약관이 우선합니다.</li>
+        </ul>
+      </div>
+    </details>
   </section>
 
 </main>
 
-<script>
-(function(){
-  const DEFAULT_DAYS = 30, MIN_DAYS = 1, MAX_DAYS = 180, GRACE_DAYS = 60;
-  const WEEKDAYS = ['일','월','화','수','목','금','토'];
-  const state = { days:0, delivery:'', due:null, base:null };
-
-  const el = id => document.getElementById(id);
-  const deliveryDate = el('deliveryDate'), periodDays = el('periodDays');
-  const modeUnknown = el('modeUnknown'), modeManual = el('modeManual');
-  const deliveryError = el('deliveryError'), periodError = el('periodError');
-  const result = el('result');
-
-  function addDays(iso, n){
-    const [y,m,d] = iso.split('-').map(Number);
-    const dt = new Date(Date.UTC(y, m-1, d));
-    dt.setUTCDate(dt.getUTCDate() + n);
-    return dt;
-  }
-  function fmt(dt){
-    const y = dt.getUTCFullYear();
-    const m = String(dt.getUTCMonth()+1).padStart(2,'0');
-    const d = String(dt.getUTCDate()).padStart(2,'0');
-    return y+'. '+m+'. '+d+'. ('+WEEKDAYS[dt.getUTCDay()]+')';
-  }
-  function fmtFile(dt){
-    return ''+dt.getUTCFullYear()+String(dt.getUTCMonth()+1).padStart(2,'0')+String(dt.getUTCDate()).padStart(2,'0');
-  }
-
-  function applyMode(){
-    const manual = modeManual.checked;
-    periodDays.readOnly = !manual;
-    if(manual){ periodDays.value = ''; periodDays.focus(); }
-    else{ periodDays.value = String(DEFAULT_DAYS); periodError.textContent = ''; }
-  }
-  modeUnknown.addEventListener('change', applyMode);
-  modeManual.addEventListener('change', applyMode);
-
-  periodDays.addEventListener('input', function(){
-    this.value = this.value.replace(/[^0-9]/g,'').slice(0,3);
-    periodError.textContent = '';
-  });
-  deliveryDate.addEventListener('input', function(){ deliveryError.textContent = ''; });
-
-  function calculate(){
-    let ok = true;
-    deliveryError.textContent = '';
-    periodError.textContent = '';
-
-    const iso = deliveryDate.value;
-    if(!iso){ deliveryError.textContent = '물품인도일을 선택하세요.'; ok = false; }
-
-    const days = parseInt(periodDays.value, 10);
-    if(!periodDays.value){
-      periodError.textContent = '결제기간 일수를 입력하세요.'; ok = false;
-    }else if(isNaN(days) || days < MIN_DAYS || days > MAX_DAYS){
-      periodError.textContent = '결제기간은 '+MIN_DAYS+'일에서 '+MAX_DAYS+'일 사이로 입력하세요.'; ok = false;
-    }
-
-    if(!ok){
-      result.classList.remove('is-open');
-      (deliveryError.textContent ? deliveryDate : periodDays).focus();
-      return;
-    }
-
-    const delivery = addDays(iso, 0);
-    const due = addDays(iso, days);
-    const base = addDays(iso, days + GRACE_DAYS);
-    state.days = days; state.delivery = delivery; state.due = due; state.base = base;
-
-    const pct = days / (days + GRACE_DAYS) * 100;
-    el('segA').style.width = pct.toFixed(2) + '%';
-    el('segB').style.width = (100 - pct).toFixed(2) + '%';
-    el('segAText').textContent = '결제기간 ' + days + '일';
-    el('markMid').style.left = 'calc(' + pct.toFixed(2) + '% - 50%)';
-
-    el('outDelivery').textContent = fmt(delivery);
-    el('outDue').textContent = fmt(due);
-    el('outBaseline').textContent = fmt(base);
-    el('dueDplus').textContent = 'D+' + days;
-    el('baseDplus').textContent = 'D+' + (days + GRACE_DAYS);
-    el('verdictDate').textContent = fmt(base);
-
-    result.classList.add('is-open');
-    result.scrollIntoView({behavior:'smooth', block:'nearest'});
-  }
-
-  function reset(){
-    deliveryDate.value = '';
-    modeUnknown.checked = true;
-    periodDays.value = String(DEFAULT_DAYS);
-    periodDays.readOnly = true;
-    deliveryError.textContent = '';
-    periodError.textContent = '';
-    result.classList.remove('is-open');
-    deliveryDate.focus();
-  }
-
-  el('calcBtn').addEventListener('click', calculate);
-  el('resetBtn').addEventListener('click', reset);
-  el('printBtn').addEventListener('click', function(){ window.print(); });
-
-  document.addEventListener('keydown', function(e){
-    if(e.key === 'Enter' && (e.target === deliveryDate || e.target === periodDays)){
-      e.preventDefault(); calculate();
-    }
-  });
-
-  /* 결과를 PNG 이미지로 저장 (외부 라이브러리 없이 canvas 직접 렌더링) */
-  el('imageBtn').addEventListener('click', function(){
-    if(!state.base) return;
-    const W = 1000, H = 520, S = 2;
-    const cv = document.createElement('canvas');
-    cv.width = W * S; cv.height = H * S;
-    const g = cv.getContext('2d');
-    g.scale(S, S);
-
-    const SERIF = '"Nanum Myeongjo","Batang","바탕",serif';
-    const SANS  = '"Malgun Gothic","맑은 고딕","Pretendard",sans-serif';
-    const INK = '#16233B', SOFT = '#516079', RULE = '#DCE3ED', SEAL = '#B01B2E';
-
-    g.fillStyle = '#FFFFFF'; g.fillRect(0,0,W,H);
-    g.strokeStyle = RULE; g.lineWidth = 1; g.strokeRect(.5,.5,W-1,H-1);
-
-    g.fillStyle = SOFT; g.font = '12px ' + SANS;
-    g.fillText('매출채권보험 실무 도구', 48, 56);
-    g.fillStyle = INK; g.font = 'bold 30px ' + SERIF;
-    g.fillText('이행지체 기준일 간이 계산기', 48, 92);
-    g.fillStyle = INK; g.fillRect(48, 112, W-96, 2);
-
-    const bx = 48, bw = W - 96, by = 152, bh = 34;
-    const pct = state.days / (state.days + 60);
-    const aw = Math.round(bw * pct);
-    g.fillStyle = INK; g.fillRect(bx, by, aw, bh);
-    g.fillStyle = SEAL; g.fillRect(bx + aw, by, bw - aw, bh);
-    g.fillStyle = '#FFFFFF'; g.fillRect(bx + aw - 1, by, 2, bh);
-    g.font = 'bold 12.5px ' + SANS; g.textAlign = 'center'; g.fillStyle = '#FFFFFF';
-    g.fillText('결제기간 ' + state.days + '일', bx + aw/2, by + 22);
-    g.fillText('연장 결재 기간 2개월', bx + aw + (bw - aw)/2, by + 22);
-
-    function mark(x, align, label, date, badge, seal){
-      g.textAlign = align;
-      g.fillStyle = seal ? SEAL : SOFT; g.font = (seal ? 'bold ' : '') + '13px ' + SANS;
-      g.fillText(label, x, by + bh + 30);
-      g.fillStyle = seal ? SEAL : INK; g.font = 'bold 21px ' + SERIF;
-      g.fillText(date, x, by + bh + 60);
-      g.fillStyle = seal ? SEAL : SOFT; g.font = 'bold 12px ' + SANS;
-      g.fillText(badge, x, by + bh + 84);
-    }
-    mark(bx, 'left', '물품인도일', fmt(state.delivery), '기산일', false);
-    mark(bx + aw, 'center', '결제기일', fmt(state.due), 'D+' + state.days, false);
-    mark(bx + bw, 'right', '이행지체 기준일', fmt(state.base), 'D+' + (state.days + 60), true);
-
-    const vy = 330, vh = 92;
-    g.fillStyle = '#FCEFF1'; g.fillRect(bx, vy, bw, vh);
-    g.fillStyle = SEAL; g.fillRect(bx, vy, 4, vh);
-    g.textAlign = 'left';
-    g.fillStyle = '#7B1626'; g.font = 'bold 16px ' + SANS;
-    g.fillText('이행지체 기준일  ' + fmt(state.base), bx + 24, vy + 36);
-    g.font = '13.5px ' + SANS;
-    g.fillText('이 날짜 이후 발생하는 매출채권은, 미수채권이 남아 있는 경우 보험금이 지급되지 않습니다.', bx + 24, vy + 64);
-
-    g.fillStyle = SOFT; g.font = '12px ' + SANS;
-    g.fillText('현금결제가 아닌 경우(어음, 전자매출채권 등)에는 기준일이 달라지므로 영업점 담당자에게 문의하시기 바랍니다.', bx, 462);
-    g.fillText('※ 참고용 간이 계산 결과이며, 실제 기준일은 보험증권 및 약관이 우선합니다.', bx, 484);
-
-    const a = document.createElement('a');
-    a.download = '이행지체기준일_' + fmtFile(state.base) + '.png';
-    a.href = cv.toDataURL('image/png');
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  });
-})();
-</script>
+<script src="js/app.js"></script>
 </body>
 </html>
