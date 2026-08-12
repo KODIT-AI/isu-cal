@@ -197,13 +197,14 @@ function applyMode() {
     $('verdictDate').textContent = fmt(state.base);
 
     $('pillStart').textContent = '기산 ' + fmtShort(state.start);
-    $('pillDue').textContent   = 'D+' + spanA;
-    $('pillBase').textContent  = 'D+' + (spanA + spanB);
+    //$('pillDue').textContent   = 'D+' + spanA;
+    //$('pillBase').textContent  = 'D+' + (spanA + spanB);
 
     $('panelBasis').textContent = '결제기간 ' + state.days + '일';
-    $('clampNote').textContent  = state.clamped
-      ? '2개월 뒤 같은 날짜가 없어 그 달의 말일로 처리했습니다.'
-      : '';
+    //$('clampNote').textContent  = state.clamped
+    //  ? '2개월 뒤 같은 날짜가 없어 그 달의 말일로 처리했습니다.'
+    //  : '';
+
   }
 
   /* 결제기일 라벨이 좌우 라벨과 겹치지 않도록 가로 위치를 보정합니다. */
