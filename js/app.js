@@ -422,7 +422,7 @@ function applyMode() {
     y += boxH + 30;
     g.fillStyle = C.muted;
     g.font = '12px ' + SANS;
-    wrapText(g, '결제기간은 물품인도일 다음 달 1일부터 계산하며, 이행지체 기준일은 결제기일의 2개월 뒤 같은 날짜입니다.',
+    wrapText(g, '결제기일은 물품인도일 다음 달 1일부터 계산하며, 이행지체 기준일은 결제기일에 2개월을 합산한 날입니다.',
              P, y, cw, 20);
 
     g.fillStyle = C.muted;
