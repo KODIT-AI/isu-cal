@@ -403,7 +403,8 @@
     panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
-  function unitLabel() { return USE_BUSINESS_DAYS ? '영업일' : '일'; }
+  //function unitLabel() { return USE_BUSINESS_DAYS ? '영업일' : '일'; }
+  function unitLabel() { return '일'; }
 
   function render() {
     var spanA = diffDays(state.delivery, state.due);

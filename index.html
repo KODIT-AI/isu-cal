@@ -14,7 +14,10 @@
   <header class="masthead">
     <h1>연장결제기일 간이 계산기</h1>
     <p>물품인도일과 보험증권상 결제기간을 입력하면 결제기일과 연장결제기일을 계산합니다.
+	  <!--
       <br><span class="lead-alert">본 계산 결과는 참고용 입니다.</span> 공신력은 없으니 정확한 내용은 보험센터로 문의해 주세요.
+	  -->
+	  <br><span class="lead-alert">본 계산 결과는 참고용이며 법적 효력이 없습니다.</span> 정확한 내용은 보험센터로 문의해 주세요.
     </p>
   </header>
 
@@ -101,13 +104,16 @@
     </div>
 
     <p class="panel-notice">
+	  <!--
       <b>본 계산 결과는 참고용 입니다.</b> 공신력은 없으니 정확한 내용은 보험센터로 문의해 주세요.<br>
       본 계산기는 물품인도일에 발생한 매출채권에 대해서만 연장결제기일을 계산합니다.
+	  -->
+	  본 계산 결과는 참고용으로 물품인도일에 발생한 매출채권에 대해서만 연장결제기일을 계산합니다.
     </p>
 
     <div class="timeline">
       <div class="tl-track">
-        <div class="tl-seg tl-seg-a" id="segA"><span id="segAText">결제기간 31영업일</span></div>
+        <div class="tl-seg tl-seg-a" id="segA"><span id="segAText">결제기간 31일</span></div>
         <div class="tl-seg tl-seg-b" id="segB"><span>결제기일 + 2개월</span></div>
       </div>
 
@@ -156,16 +162,13 @@
       <summary class="notes-summary">
         <span class="notes-title">유의사항</span>
         <span class="notes-count">3</span>
-        <span class="notes-chevron" aria-hidden="true"></span>
+        <span class="notes셰산chevron" aria-hidden="true"></span>
       </summary>
       <div class="notes-body">
         <ul>
           <li>연장결제기일 <b>다음 날부터</b> 발생하는 매출채권(인도 물품)은 보험대상이 아닙니다.</li>
           <li>현금결제가 아닌 경우(예: 어음, 전자매출채권 등)에는 이행지체 기준일이 달라지므로, 영업점 담당자에게 별도로 문의하셔야 합니다.</li>
-          <li>이 계산기는 참고용 간이 도구입니다. 실제 기준일은 보험증권 및 약관이 우선합니다.</li>
-		  <!--
-          <li>영업일은 토·일요일과 관공서 공휴일을 제외한 날입니다. 임시공휴일이 새로 지정되면 <b>js/app.js</b>의 공휴일 목록에 추가해야 합니다.</li>
-		  -->
+          <li>이 계산기는 참고용 간이로 법적효력이 없습니다. 실제 기준일은 보험증권 및 약관이 우선합니다.</li>
         </ul>
       </div>
     </details>
