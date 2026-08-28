@@ -3,17 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="물품인도일과 보험증권상 결제기간으로 결제기일과 이행지체 기준일을 계산하는 간이 계산기">
+<meta name="description" content="물품인도일과 보험증권상 결제기간으로 결제기일과 연장결제기일을 계산하는 간이 계산기">
 <meta name="color-scheme" content="light">
-<title>이행지체 기준일 간이 계산기</title>
+<title>연장결제기일 간이 계산기</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <main class="wrap">
 
   <header class="masthead">
-    <h1>이행지체 기준일 간이 계산기</h1>
-    <p>물품인도일과 보험증권상 결제기간을 입력하면 결제기일과 이행지체 기준일을 계산합니다.</p>
+    <h1>연장결제기일 간이 계산기</h1>
+    <p>물품인도일과 보험증권상 결제기간을 입력하면 결제기일과 연장결제기일을 계산합니다.
+      <br><span class="lead-alert">본 계산 결과는 참고용 입니다.</span> 공신력은 없으니 정확한 내용은 보험센터로 문의해 주세요.
+    </p>
   </header>
 
   <section class="card" aria-label="입력">
@@ -21,12 +23,47 @@
 
       <div class="field">
         <label class="field-label" for="deliveryDate">물품인도일</label>
-        <input type="date" id="deliveryDate" aria-describedby="deliveryError">
+
+        <div class="dp" id="dp">
+          <input type="text" id="deliveryDate" class="dp-input" readonly
+                 placeholder="연도-월-일" autocomplete="off"
+                 aria-haspopup="dialog" aria-expanded="false" aria-describedby="deliveryError">
+          <button type="button" class="dp-open" id="dpOpen" aria-label="달력 열기">
+            <span class="dp-icon" aria-hidden="true"></span>
+          </button>
+
+          <div class="dp-pop" id="dpPop" role="dialog" aria-modal="true" aria-label="날짜 선택" hidden>
+            <div class="dp-head">
+              <button type="button" class="dp-nav" id="dpPrev" aria-label="이전 달"><i class="dp-arw dp-arw-l"></i></button>
+              <div class="dp-sel">
+                <select id="dpYear" aria-label="연도"></select>
+                <select id="dpMonth" aria-label="월"></select>
+              </div>
+              <button type="button" class="dp-nav" id="dpNext" aria-label="다음 달"><i class="dp-arw dp-arw-r"></i></button>
+            </div>
+
+            <div class="dp-week" aria-hidden="true">
+              <span class="is-sun">일</span><span>월</span><span>화</span><span>수</span>
+              <span>목</span><span>금</span><span class="is-sat">토</span>
+            </div>
+
+            <div class="dp-grid" id="dpGrid" role="grid"></div>
+
+            <div class="dp-foot">
+              <button type="button" class="dp-today" id="dpToday">오늘</button>
+              <div class="dp-acts">
+                <button type="button" class="dp-btn dp-cancel" id="dpCancel">취소</button>
+                <button type="button" class="dp-btn dp-ok" id="dpOk">확인</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <p class="msg msg-error" id="deliveryError" role="alert"></p>
       </div>
 
       <div class="field">
-        <span class="field-label" id="periodLabel">보험증권에 표시된 결제기간 <span class="days-range">(1~180일)</span> </span>
+        <span class="field-label" id="periodLabel">보험증권에 표시된 결제기간 <span class="days-range">(1~180일)</span></span>
         <div class="segmented" role="radiogroup" aria-labelledby="periodLabel">
           <span class="seg">
             <input type="radio" name="periodMode" value="unknown" id="modeUnknown" checked>
@@ -41,7 +78,6 @@
           <input type="text" id="periodDays" inputmode="numeric" maxlength="3" value="31" readonly
                  aria-describedby="periodError periodGuide">
           <span class="days-unit">일</span>
-          
         </div>
         <p class="msg msg-error" id="periodError" role="alert"></p>
         <p class="msg msg-guide" id="periodGuide">
@@ -60,13 +96,18 @@
 
   <section class="panel" id="panel" aria-live="polite">
     <div class="panel-head">
-      <p class="panel-eyebrow">계산 결과</p>
+      <p class="panel-eyebrow">[계산 결과]</p>
       <p class="panel-basis" id="panelBasis">결제기간 31일</p>
     </div>
 
+    <p class="panel-notice">
+      <b>본 계산 결과는 참고용 입니다.</b> 공신력은 없으니 정확한 내용은 보험센터로 문의해 주세요.<br>
+      본 계산기는 물품인도일에 발생한 매출채권에 대해서만 연장결제기일을 계산합니다.
+    </p>
+
     <div class="timeline">
       <div class="tl-track">
-        <div class="tl-seg tl-seg-a" id="segA"><span id="segAText">결제기간 31일</span></div>
+        <div class="tl-seg tl-seg-a" id="segA"><span id="segAText">결제기간 31영업일</span></div>
         <div class="tl-seg tl-seg-b" id="segB"><span>결제기일 + 2개월</span></div>
       </div>
 
@@ -81,25 +122,25 @@
           <span class="tl-body" id="midBody">
             <p class="tl-label">결제기일</p>
             <p class="tl-date" id="outDue">—</p>
-            <!-- <span class="tl-pill" id="pillDue">—</span>  -->
           </span>
         </div>
 
         <div class="tl-mark tl-end">
-          <p class="tl-label">이행지체 기준일</p>
+          <p class="tl-label">연장결제기일</p>
           <p class="tl-date" id="outBaseline">—</p>
-          <!-- <span class="tl-pill" id="pillBase">—</span>  -->
         </div>
       </div>
 
-      <p class="tl-foot">결제기일은 물품인도일 다음 달 1일부터 계산하며, 이행지체 기준일은 결제기일에 2개월을 합산한 날입니다.</p>
+      <p class="tl-foot">
+        결제기일은 물품인도일 다음 달 1일부터 영업일 기준으로 계산하며, 연장결제기일은 결제기일에 2개월을 합산한 날입니다.
+        <span class="tl-adjust" id="adjustNote"></span>
+      </p>
     </div>
 
     <aside class="aside">
-      <span class="aside-stamp">이행지체<br>기준일</span>
+      <span class="aside-stamp">연장결제기일</span>
       <div class="aside-body">
         <p><b id="verdictDate">—</b> <b>다음 날부터</b> 발생하는 매출채권(인도 물품)은 보험대상이 아닙니다.</p>
-        <!-- <p class="aside-note" id="clampNote"></p> -->
       </div>
     </aside>
 
@@ -119,9 +160,12 @@
       </summary>
       <div class="notes-body">
         <ul>
-          <li>이행지체 기준일 <b>다음 날부터</b> 발생하는 매출채권(인도 물품)은 보험대상이 아닙니다.</li>
+          <li>연장결제기일 <b>다음 날부터</b> 발생하는 매출채권(인도 물품)은 보험대상이 아닙니다.</li>
           <li>현금결제가 아닌 경우(예: 어음, 전자매출채권 등)에는 이행지체 기준일이 달라지므로, 영업점 담당자에게 별도로 문의하셔야 합니다.</li>
           <li>이 계산기는 참고용 간이 도구입니다. 실제 기준일은 보험증권 및 약관이 우선합니다.</li>
+		  <!--
+          <li>영업일은 토·일요일과 관공서 공휴일을 제외한 날입니다. 임시공휴일이 새로 지정되면 <b>js/app.js</b>의 공휴일 목록에 추가해야 합니다.</li>
+		  -->
         </ul>
       </div>
     </details>
@@ -129,6 +173,7 @@
 
 </main>
 
+<script src="js/holidays.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>
