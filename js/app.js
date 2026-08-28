@@ -1,15 +1,17 @@
 /* ==========================================================================
    연장결제기일 간이 계산기
    ------------------------------------------------------------------------
-   계산 규칙 (영업일 기준)
+   계산 규칙 (역일/달력일 기준 + 종료일 휴일 보정)
 
      ① 결제기간 기산일 = 물품인도일이 속한 달의 "다음 달 1일"
-                        (그날이 휴일이면 다음 영업일이 1일째가 됩니다)
-     ② 결제기일       = 기산일을 1일째로 하여 결제기간만큼 "영업일"을 센 날
-     ③ 연장결제기일    = 결제기일에 2개월을 더한 날 (2개월 뒤 같은 날짜)
+     ② 결제기일       = 기산일을 1일째로 하여 결제기간만큼 "역일(달력일)"을 센 날
+                        · 그렇게 센 날이 휴일이면 다음 영업일로 이월
+     ③ 연장결제기일    = ②의 결제기일에 2개월을 더한 날 (2개월 뒤 같은 날짜)
                         · 그 날짜가 없으면 해당 월의 말일
-                        · 그날이 휴일이면 다음 영업일로 이월
+                        · 그 날짜가 휴일이면 다음 영업일로 이월
 
+   ※ 기간을 세는 동안에는 휴일을 건너뛰지 않고 달력일 그대로 셉니다.
+     다 센 뒤 "끝나는 날"이 휴일일 때만 다음 영업일로 옮깁니다.
    영업일 = 토·일요일과 관공서 공휴일을 제외한 날
    ========================================================================== */
 (function () {
@@ -18,7 +20,6 @@
   /* ══════════════════════════════════════════════════════════
      ① 설정
      ══════════════════════════════════════════════════════════ */
-  var USE_BUSINESS_DAYS = true;  // false 로 두면 역일(달력일) 기준으로 계산합니다
   var DEFAULT_DAYS = 31;         // '모름' 선택 시 (다음 달 월말결제)
   var MIN_DAYS     = 1;
   var MAX_DAYS     = 180;
@@ -53,7 +54,8 @@
 
   var state = {
     days: 0, delivery: null, start: null, due: null, base: null,
-    clamped: false, moved: false, spanA: 0, spanB: 0, pct: 50, outOfRange: false
+    clamped: false, moved: false, dueMoved: false, baseMoved: false,
+    spanA: 0, spanB: 0, pct: 50, outOfRange: false
   };
 
   /* ── DOM ────────────────────────────────────────────────── */
@@ -109,20 +111,6 @@
     var w = dt.getUTCDay();
     if (w === 0 || w === 6) { return false; }
     return !isHoliday(dt);
-  }
-  /** from 을 1일째로 하여 영업일 n일을 센 날. from 이 휴일이면 다음 영업일이 1일째. */
-  function countBusinessDays(from, n) {
-    var d = new Date(from.getTime());
-    var counted = 0, guard = 0;
-    while (guard < 4000) {
-      if (isBusinessDay(d)) {
-        counted++;
-        if (counted === n) { return d; }
-      }
-      d.setUTCDate(d.getUTCDate() + 1);
-      guard++;
-    }
-    return d;
   }
   /** 휴일이면 다음 영업일로 이월 */
   function nextBusinessDay(dt) {
@@ -373,18 +361,23 @@
     }
 
     var delivery = toDate(iso);
-    var start    = nextMonthFirst(delivery);                 // ① 다음 달 1일
-    var due, base, grace, moved = false;
+    var start    = nextMonthFirst(delivery);                 // ① 다음 달 1일 (기산일)
 
-    if (USE_BUSINESS_DAYS) {
-      due   = countBusinessDays(start, days);                // ② 영업일 기준
-      grace = addMonths(due, GRACE_MONTHS);                  // ③ 2개월 뒤
-      base  = nextBusinessDay(grace.date);                   //    휴일이면 이월
-      moved = toIso(base) !== toIso(grace.date);
-    } else {
-      due   = addDays(start, days - 1);                      // 역일 기준
-      grace = addMonths(due, GRACE_MONTHS);
-      base  = grace.date;
+    var due = addDays(start, days - 1);                      // ② 기산일부터 역일로 days일째
+    var dueMoved = false;
+    if (!isBusinessDay(due)) {                                //    끝나는 날이 휴일이면
+      var dueAdjusted = nextBusinessDay(due);                 //    다음 영업일로 이월
+      dueMoved = toIso(dueAdjusted) !== toIso(due);
+      due = dueAdjusted;
+    }
+
+    var grace = addMonths(due, GRACE_MONTHS);                 // ③ 결제기일 + 2개월
+    var base  = grace.date;
+    var baseMoved = false;
+    if (!isBusinessDay(base)) {                                //    끝나는 날이 휴일이면
+      var baseAdjusted = nextBusinessDay(base);                //    다음 영업일로 이월
+      baseMoved = toIso(baseAdjusted) !== toIso(base);
+      base = baseAdjusted;
     }
 
     state.days     = days;
@@ -393,9 +386,10 @@
     state.due      = due;
     state.base     = base;
     state.clamped  = grace.clamped;
-    state.moved    = moved;
-    state.outOfRange = USE_BUSINESS_DAYS &&
-                       (toIso(delivery) < COVERAGE.from || toIso(base) > COVERAGE.to);
+    state.dueMoved = dueMoved;
+    state.baseMoved = baseMoved;
+    state.moved    = dueMoved || baseMoved;
+    state.outOfRange = (toIso(delivery) < COVERAGE.from || toIso(base) > COVERAGE.to);
 
     render();
     panel.classList.add('is-open');
@@ -403,7 +397,6 @@
     panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
-  //function unitLabel() { return USE_BUSINESS_DAYS ? '영업일' : '일'; }
   function unitLabel() { return '일'; }
 
   function render() {
@@ -434,6 +427,7 @@
     if (state.clamped) { notes.push('2개월 뒤 같은 날짜가 없어 그 달의 말일로 계산했습니다.'); }
     if (state.moved)   { notes.push('연장결제기일이 휴일이라 다음 영업일로 이월했습니다.'); }
     */
+	notes.push('연장결제기일이 공휴일인 경우에는 그 익일에 만료됩니다. 자세한 내용은 보험센터로 문의해 주세요.');
     $('adjustNote').textContent = notes.join(' ');
   }
 
@@ -662,21 +656,18 @@
     y += boxH + 28;
     g.fillStyle = C.muted;
     g.font = '12px ' + SANS;
-    y = wrapText(g, '결제기일은 물품인도일 다음 달 1일부터 영업일 기준으로 계산하며, ' +
-                    ' 연장결제기일은 결제기일에 2개월을 합산한 날입니다.',
+    y = wrapText(g, '결제기일은 물품인도일 다음 달 1일부터 역일(달력일) 기준으로 계산하며, ' +
+                    '그 날이 휴일이면 다음 영업일로, 연장결제기일은 결제기일에 2개월을 합산한 날입니다.',
                  P, y, cw, 20);
- 				 
-	/*		
-    y = wrapText(g, '결제기일은 물품인도일 다음 달 1일부터 ' + (USE_BUSINESS_DAYS ? '영업일' : '역일') +
-                    ' 기준으로 계산하며, 연장결제기일은 결제기일에 ' + GRACE_MONTHS + '개월을 합산한 날입니다.',
+    y = wrapText(g, '연장결제기일이 공휴일인 경우에는 그 익일에 만료됩니다. 자세한 내용은 보험센터로 문의해 주세요.',
                  P, y, cw, 20);
-		 
+
     if (state.moved || state.clamped) {
       g.fillStyle = C.accent;
       g.font = 'bold 12px ' + SANS;
       wrapText(g, $('adjustNote').textContent, P, y + 4, cw, 19);
     }
-	*/
+
 
     g.fillStyle = C.muted;
     g.font = '11.5px ' + SANS;
