@@ -672,6 +672,13 @@
     g.fillStyle = C.muted;
     g.font = '11.5px ' + SANS;
     g.fillText('실제 기준일은 보험증권 및 약관이 우선합니다.', P, H - 26);
+	
+	/* 하단 기관명 (우측 정렬) */
+    g.textAlign = 'right';
+    g.font = 'bold 12px ' + SANS;
+    g.fillText('광주신용보험센터', W - P, H - 26);
+    g.textAlign = 'left';
+	
   }
 
   function buildCanvas() {
