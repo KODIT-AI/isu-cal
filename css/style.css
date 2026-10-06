@@ -466,6 +466,14 @@ input[readonly]{color:var(--muted);border-bottom-style:dashed;cursor:default}
 .notes-body li + li{margin-top:9px}
 .notes-body b{color:var(--ink-2);font-weight:700}
 
+/* ── 하단 기관명 ─────────────────────────────────────────── */
+.site-footer{
+  margin:28px 0 8px;
+  text-align:center;
+  font-size:13px;font-weight:600;
+  color:var(--muted);letter-spacing:-.005em;
+}
+
 /* ── 모바일 : 타임라인을 세로로 ───────────────────────────── */
 @media (max-width:680px){
   body{padding:28px 16px 52px}
